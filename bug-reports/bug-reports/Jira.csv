@@ -1,0 +1,557 @@
+Summary,Issue key,Issue id,Issue Type,Status,Project key,Project name,Project type,Project lead,Project lead id,Project description,Priority,Resolution,Assignee,Assignee Id,Reporter,Reporter Id,Creator,Creator Id,Created,Updated,Last Viewed,Resolved,Due date,Votes,Description,Environment,Watchers,Watchers,Watchers Id,Watchers Id,Original estimate,Remaining Estimate,Time Spent,Work Ratio,Σ Original Estimate,Σ Remaining Estimate,Σ Time Spent,Security Level,Attachment,Attachment,Custom field (Actual Result),Custom field (Development),Custom field (Expected results),Custom field (Impact),Custom field (Issue color),Custom field (Rank),Custom field (Start date),Custom field (Steps To Reproduce),Custom field (Team),Custom field (Vulnerability),Comment,Comment,Status Category,Status Category Changed
+Lack of Backend Sanitization for Address/Location Parameter,KAN-16,10245,Bug,To Do,KAN,Wegodelivery QA & Security Lab,software,Alexander Adrian,712020:7fd212e7-d79f-454c-a151-8ac1763987b1,Your first project,Medium,,claudiustefan,712020:ef548095-f904-4755-bca1-43853fca538f,Alexander Adrian,712020:7fd212e7-d79f-454c-a151-8ac1763987b1,Alexander Adrian,712020:7fd212e7-d79f-454c-a151-8ac1763987b1,12/Mar/26 1:03 PM,12/Mar/26 1:08 PM,13/Mar/26 7:20 PM,,,0,"h3. 🐞 Bug Summary
+
+During security testing using *Burp Suite*, I identified that the backend server does not sanitize HTML/JavaScript payloads sent via the {{address}} parameter. While the Frontend currently mitigates the risk by auto-escaping characters, the Backend accepts and reflects raw tags in the JSON response. This poses a significant *Stored XSS* risk if this data is rendered in other un-sanitized areas of the platform (e.g., Admin Dashboards, Order History, or Email templates).
+
+----
+
+h3. 🔁 Steps to Reproduce
+
+* Open Burp Suite
+* Click on Proxy and make sure Intercept is OFF
+* Open Browser from Burp and go to WeGo Homepage: [https://wegodelivery.app/en|https://wegodelivery.app/en|smart-link] 
+* Type any city in the ""enter delivery address"" parameter, but don't Hit Enter
+* In Burp turn ON Intercept
+* Return to the browser and hit enter
+* Return to Burp and click on the request that shows the city you entered
+* In the Inspector section change the value of your city with <img src=x onerror=alert(1)>
+* Click Forward
+* Check the history section and the browser
+* Analyze the server response.
+
+----
+
+h3. ✅ Expected Result
+
+The server should sanitize the input by converting special characters to HTML entities (e.g., {{<}} becomes {{&lt;}}) or reject the request if it contains forbidden tags.
+
+----
+
+h3. ❌ Actual Result
+
+The server reflects the raw, un-sanitized payload in the JSON response: {{""address"":""--><img src=x onerror=alert(1)>""}}
+
+----
+
+h3. 🔥 Severity
+
+*  High 
+
+----
+
+h3. 🌍 Environment
+
+* OS: Windows 11
+* Browser: Burp Chrome
+* Device: laptop Acer aspire lite 16
+
+----
+
+h3. 📌 Impact
+
+Although the frontend currently mitigates the risk via auto-escaping, the *backend's failure to sanitize input* poses a high risk of *Stored or Blind XSS*.
+
+# *Administrative Compromise:* Malicious payloads stored in the database could be executed in the *Admin Dashboard* (which may have different security configurations), leading to *Session Hijacking* or *Account Takeover* of staff accounts.
+# *Lateral Movement:* The unsanitized data could propagate to internal systems (logs, support tickets, email templates) where it could be executed.
+# *Data Integrity:* Allows for *HTML Injection*, which can be used to deface parts of the application or conduct phishing attacks against other users.
+
+----
+
+h3. 📎 Attachments
+
+!image-20260312-110224.png|width=686,alt=""image-20260312-110224.png""!",,Alexander Adrian,,712020:7fd212e7-d79f-454c-a151-8ac1763987b1,,,,,,,,,,12/Mar/26 1:03 PM;21482f02-4770-419d-90c5-618b8a94b08e;image-20260312-110224.png;https://alexxanderadrian-1771585764130.atlassian.net/rest/api/3/attachment/content/10168,,,,,,,0|i00047:,,,,,,,To Do,12/Mar/26 1:03 PM
+HomePage UI BUG,KAN-15,10212,Bug,To Do,KAN,Wegodelivery QA & Security Lab,software,Alexander Adrian,712020:7fd212e7-d79f-454c-a151-8ac1763987b1,Your first project,Medium,,claudiustefan,712020:ef548095-f904-4755-bca1-43853fca538f,Alexander Adrian,712020:7fd212e7-d79f-454c-a151-8ac1763987b1,Alexander Adrian,712020:7fd212e7-d79f-454c-a151-8ac1763987b1,11/Mar/26 12:35 PM,11/Mar/26 12:35 PM,12/Mar/26 2:16 PM,,,0,"h3. 🐞 Bug Summary
+
+[UI] Authentication status not reflected on Homepage; ""Already have an account?"" message persists after successful login.
+
+----
+
+h3. 🔁 Steps to Reproduce
+
+# Navigate to [https://wegodelivery.app/en|https://wegodelivery.app/en|smart-link] 
+# Log in to your account
+# Check the message bellow the Search bar for delivery address
+
+----
+
+h3. ✅ Expected Result
+
+Upon login, the ""Sign in"" call-to-action should disappear and be replaced by user-specific content or removed entirely.
+
+----
+
+h3. ❌ Actual Result
+
+The UI fails to update the auth state; the message ""Already have an account? Sign in"" remains visible.
+
+_Refreshing the page manually, does not fix the issue._
+
+----
+
+h3. 🔥 Severity
+
+*  Medium
+
+----
+
+h3. 🌍 Environment
+
+* OS: Windows 11
+* Browser: Firefox
+* Device: laptop
+
+----
+
+h3. 📌 Impact
+
+High user confusion; users may attempt to log in multiple times, doubting if their session is active.
+
+----
+
+h3. 📎 Attachments
+
+!image-20260311-102959.png|width=686,alt=""image-20260311-102959.png""!",,Alexander Adrian,,712020:7fd212e7-d79f-454c-a151-8ac1763987b1,,,,,,,,,,11/Mar/26 12:35 PM;21482f02-4770-419d-90c5-618b8a94b08e;image-20260311-102959.png;https://alexxanderadrian-1771585764130.atlassian.net/rest/api/3/attachment/content/10135,,,,,,,0|i0003z:,,,,,,,To Do,11/Mar/26 12:35 PM
+[PERFORMANCE] Critical Load Time Discrepancy: Mobile LCP (6.5s) vs. Desktop (0.9s),KAN-14,10179,Task,To Do,KAN,Wegodelivery QA & Security Lab,software,Alexander Adrian,712020:7fd212e7-d79f-454c-a151-8ac1763987b1,Your first project,High,,claudiustefan,712020:ef548095-f904-4755-bca1-43853fca538f,Alexander Adrian,712020:7fd212e7-d79f-454c-a151-8ac1763987b1,Alexander Adrian,712020:7fd212e7-d79f-454c-a151-8ac1763987b1,08/Mar/26 11:45 AM,08/Mar/26 12:13 PM,13/Mar/26 5:57 PM,,,0,"A performance audit using Google Lighthouse reveals a significant gap between the Desktop and Mobile experience. While the Desktop version achieves an elite performance score (*98*), the Mobile version is struggling at *50*, primarily due to a critically high *Largest Contentful Paint (LCP)*.
+
+In a competitive delivery market, mobile users expect near-instant loading. Current metrics show that mobile users are waiting over 6 seconds before the main content is visible.
+
+h3. *Business Impact*
+
+* *User Retention:* 53% of mobile users abandon sites that take longer than 3 seconds to load. Our current 6.5s LCP puts us at high risk of losing customers to competitors.
+* *SEO:* Google prioritizes Core Web Vitals (LCP, TBT) for mobile indexing. This performance gap may negatively affect our search engine ranking.
+
+h3. *Steps to Reproduce* Open *Google Chrome* in *Incognito Mode* (to ensure no extensions interfere with performance).
+
+# Navigate to the Wego Homepage: [WEGO24 Business|https://wegodelivery.app/en]
+# Open *Chrome DevTools* ({{F12}} or {{Right Click -> Inspect}}).
+# Go to the *Lighthouse* tab.
+# Configure the following settings for the first run:
+#* *Mode:* Navigation (Default)
+#* *Device:* *Mobile*
+#* *Categories:* Performance, Accessibility, Best Practices, SEO.
+# Click *""Analyze page load""* and wait for the report.
+# Repeat the process by switching the *Device* to *Desktop* for comparison.
+
+h3. *Environment Details*
+
+* *Device Type:* Laptop
+* *Operating System:* Windows 11 *Browser:* EDGE - *Incognito Mode*
+* *Network Connection:*  Stable Home Wi-Fi / 1GB
+* *Lighthouse Throttling (Mobile):* Simulated Moto G Power, Slow 4G (Default Lighthouse Mobile profile)
+
+----
+
+h3. *Proposed Technical Solutions*
+
+Based on the Lighthouse audit, we recommend the following optimizations:
+
+# *Eliminate Render-Blocking Resources:* Currently causing a delay of ~1,090ms on mobile. Defer non-critical CSS/JS.
+# *Optimize LCP Image:* Implement {{<link rel=""preload"">}} for the main hero image (e.g., the burger/delivery banner) to ensure it starts loading immediately.
+# *Font Loading Strategy:* Use {{font-display: swap}} in CSS to ensure text remains visible while custom fonts are loading.
+# *Image Compression:* Serve images in next-gen formats (WebP or AVIF) and ensure they are properly sized for mobile viewports.
+# *Cache Policy:* Extend cache lifetimes for static assets to improve load times for returning users.
+
+!image-20260308-092531.png|width=671,alt=""image-20260308-092531.png""!",,Alexander Adrian,,712020:7fd212e7-d79f-454c-a151-8ac1763987b1,,,,,,,,,,08/Mar/26 11:45 AM;21482f02-4770-419d-90c5-618b8a94b08e;image-20260308-092531.png;https://alexxanderadrian-1771585764130.atlassian.net/rest/api/3/attachment/content/10102,,,,,,,0|i0003r:,,,,,,,To Do,08/Mar/26 11:45 AM
+Log In Email Verification,KAN-11,10112,Bug,Done,KAN,Wegodelivery QA & Security Lab,software,Alexander Adrian,712020:7fd212e7-d79f-454c-a151-8ac1763987b1,Your first project,Medium,Done,claudiustefan,712020:ef548095-f904-4755-bca1-43853fca538f,Alexander Adrian,712020:7fd212e7-d79f-454c-a151-8ac1763987b1,Alexander Adrian,712020:7fd212e7-d79f-454c-a151-8ac1763987b1,23/Feb/26 9:33 PM,24/Feb/26 12:48 PM,08/Mar/26 11:41 AM,24/Feb/26 12:48 PM,,0,"h3. 🐞 Bug Summary
+
+Fake email addresses accepted in the field and verification is sent.
+
+For real email addresses the verification is sent but never received
+
+----
+
+h3. 🔁 Steps to Reproduce
+
+# Go to [https://wegodelivery.app/en/customer/login|https://wegodelivery.app/en/customer/login|smart-link] 
+# Add a fake email address
+# Click continue
+
+----
+
+h3. ✅ Expected Result
+
+fake email address should not be accepted
+
+h3. ❌ Actual Result
+
+fake email address is being accepted and verification email sent
+
+----
+
+h3. 🔥 Severity
+
+*  Medium 
+
+----
+
+h3. 🌍 Environment
+
+* OS: windows 11
+* Browser: Edge
+* Device: PC
+
+----
+
+h3. 📎 Attachments
+
+!image-20260223-193204.png|width=666,alt=""image-20260223-193204.png""!
+
+!image-20260223-193226.png|width=671,alt=""image-20260223-193226.png""!",,Alexander Adrian,Claudiu Sfetan,712020:7fd212e7-d79f-454c-a151-8ac1763987b1,712020:b2a39849-1f84-43df-9964-f5586bb81e48,,,,,,,,,23/Feb/26 9:33 PM;21482f02-4770-419d-90c5-618b8a94b08e;image-20260223-193204.png;https://alexxanderadrian-1771585764130.atlassian.net/rest/api/3/attachment/content/10067,23/Feb/26 9:33 PM;21482f02-4770-419d-90c5-618b8a94b08e;image-20260223-193226.png;https://alexxanderadrian-1771585764130.atlassian.net/rest/api/3/attachment/content/10068,,,,,,0|i00033:,,,,,"24/Feb/26 12:15 PM;712020:b2a39849-1f84-43df-9964-f5586bb81e48;h2. Fix Deployed — {{0b626ae}} on {{main}}
+
+h3. Issue 1: Fake emails accepted
+
+*Root cause:* The email validation only checked RFC format (Zod {{.email()}}), with no domain-level filtering. Any syntactically valid email like {{test@mailinator.com}} would pass and trigger a Supabase OTP magic link send.
+
+*Fix:* Added a disposable email domain blocklist (~100 known providers) to the {{emailSchema}} in {{customer-auth-schemas.ts}}. The check:
+
+* Runs after email normalization (trim + lowercase)
+* Uses efficient Set lookup (O(1))
+* Applies to both customer login and signup flows (shared schema)
+* Shows error: ""Temporary or disposable email addresses are not allowed""
+* Blocks: mailinator.com, yopmail.com, guerrillamail.com, temp-mail.org, and ~96 more
+
+*Tests:* 5 new test cases added, all passing (38 total).
+
+h3. Issue 2: Real emails — verification sent but never received
+
+This is a *Supabase SMTP delivery issue* outside our application code. Supabase Auth handles magic link email sending via their own SMTP infrastructure. Possible causes:
+
+* Emails landing in spam folders
+* Supabase email rate limits
+* Email provider delivery delays
+
+This should be investigated in the Supabase dashboard under Auth > Email Templates and Logs.
+
+h3. Files Changed
+
+* {{apps/web/src/lib/auth/disposable-email-domains.ts}} — new blocklist (100 domains)
+* {{apps/web/src/lib/auth/customer-auth-schemas.ts}} — email schema with disposable check
+* {{apps/web/src/lib/auth/customer-auth-schemas.test.ts}} — 5 new test cases","24/Feb/26 12:28 PM;712020:b2a39849-1f84-43df-9964-f5586bb81e48;h2. Enhancement: Server-Side Email Verification (commit 1e8a7c8)
+
+h3. What changed
+
+The customer login form now *verifies that an email is registered before sending an OTP*. Unregistered users see ""No account found with this email. Please sign up first."" instead of receiving a useless magic link.
+
+h3. Implementation
+
+# *New API endpoint* {{/api/auth/check-email}} — POST endpoint that queries the {{profiles}} table via admin client to check if an email exists
+# *Login form updated* — Calls check-email API before {{signInWithOtp}}; changed {{shouldCreateUser: false}} so login never auto-creates accounts
+# *Signup wizard unchanged* — Still uses {{shouldCreateUser: true}} to allow new account creation
+# *Rate limiting* — 5 requests per minute per IP to prevent email enumeration attacks
+# *Graceful degradation* — If the check-email API fails (500), the form falls back to sending the OTP normally
+# *i18n* — Error message added in English and Spanish
+
+h3. Security measures
+
+* Rate limited at 5 req/min per IP (matches AUTH_OTP)
+* JSON parse error handling returns 400 (not 500)
+* Admin client query is minimal: {{SELECT id FROM profiles WHERE email = ?}}
+* Input validated with shared Zod {{emailSchema}} (includes disposable domain blocking)
+
+h3. Files changed
+
+* {{apps/web/src/app/api/auth/check-email/route.ts}} (new)
+* {{apps/web/src/components/auth/customer-login-form.tsx}}
+* {{apps/web/src/components/auth/customer-login-form.test.tsx}} (4 new tests, 22 total)
+* {{apps/web/src/lib/rate-limit.ts}}
+* {{apps/web/messages/en.json}} and {{es.json}}
+
+h3. Testing
+
+* 22 login form tests passing (4 new: unregistered email, rate limit, API fallback, call order)
+* 38 auth schema tests passing
+* Deployed to production",Done,24/Feb/26 12:48 PM
+🔐 Security Bug – Stored XSS in Profile Name Field,KAN-9,10046,Bug,Done,KAN,Wegodelivery QA & Security Lab,software,Alexander Adrian,712020:7fd212e7-d79f-454c-a151-8ac1763987b1,Your first project,Highest,Done,claudiustefan,712020:ef548095-f904-4755-bca1-43853fca538f,Alexander Adrian,712020:7fd212e7-d79f-454c-a151-8ac1763987b1,Alexander Adrian,712020:7fd212e7-d79f-454c-a151-8ac1763987b1,20/Feb/26 3:18 PM,24/Feb/26 3:50 PM,27/Feb/26 4:08 PM,24/Feb/26 3:50 PM,,0,"h3. 🐞 Bug Summary
+
+The Profile Name input field allows malicious code injection (Stored XSS). Input is not sanitized, validated, or escaped, allowing HTML/JS payloads to be saved and executed.
+
+----
+
+h3. 🔁 Steps to Reproduce
+
+# Log into the application.
+# Navigate to *Profile → Edit Profile*.
+# In the *Name* field, enter a malicious payload, for example: <script>alert('XSS')</script> OR ""><img src=x onerror=alert('XSS')>
+# Save changes.
+# Return to the profile page or any page where the name is displayed.
+
+----
+
+h3. ✅ Expected Result
+
+* The input should be sanitized.
+* HTML/JS code must NOT be stored or executed.
+* The name should remain plain text only.
+* Application should reject dangerous characters ({{<}}, {{>}}, {{""}}, {{'}}, {{/}}, etc.)
+
+----
+
+h3. ❌ Actual Result
+
+* The application *accepts* the malicious input.
+* The payload is *stored in the database*.
+* The injected code is *displayed unsanitized*.
+* JavaScript executes when the profile loads → *Stored XSS vulnerability*.
+
+----
+
+h3. 🔥 Severity
+
+* Critical 
+
+----
+
+h3. 🌍 Environment
+
+* OS: Windows 11
+* Browser: Edge
+* Device: Pc
+
+----
+
+h3. 📌 Impact
+
+* Compromises all users viewing the infected profile
+* Allows execution of arbitrary JavaScript
+* Can steal session tokens, cookies, and sensitive data
+* Violates OWASP Top 10 – A03 Injection
+
+----
+
+h3. 📎 Attachments
+
+!image-20260220-131751.png|width=671,alt=""image-20260220-131751.png""!",,Alexander Adrian,Claudiu Sfetan,712020:7fd212e7-d79f-454c-a151-8ac1763987b1,712020:b2a39849-1f84-43df-9964-f5586bb81e48,,,,,,,,,20/Feb/26 3:18 PM;21482f02-4770-419d-90c5-618b8a94b08e;image-20260220-131751.png;https://alexxanderadrian-1771585764130.atlassian.net/rest/api/3/attachment/content/10034,,,,,,,0|i0003b:,,,,,"24/Feb/26 12:09 PM;712020:b2a39849-1f84-43df-9964-f5586bb81e48;h2. Fix Deployed — {{63852ad}} on {{main}}
+
+h3. Investigation
+
+React's JSX auto-escaping already prevents XSS when rendering — {{dangerouslySetInnerHTML}} is not used anywhere in the codebase. A payload like {{<script>alert('XSS')</script>}} entered in the profile name field would display as literal text, not execute.
+
+However, storing unsanitized HTML in the database is still a defense-in-depth concern (future code could introduce unsafe rendering patterns).
+
+h3. Changes Made
+
+# *Extracted* {{sanitizeTextInput()}} to {{@wego/utils}} — shared function that strips HTML tags ({{<[^>]*>}}), unclosed {{<}} characters, and control characters including DEL ({{\x7F}})
+# *Applied* {{.transform(sanitizeTextInput).pipe(z.string().min(N))}} to all user-facing text fields:
+#* Restaurant name, description
+#* Menu category name, description
+#* Menu item name, description
+#* Modifier group name, description
+#* Modifier name
+#* Order notes, reject/cancel reasons
+#* Special instructions (cart, checkout, order items, orders)
+#* Delivery instructions
+#* Restaurant and driver reviews
+#* Profile fullName
+# *Post-sanitization validation* — {{.pipe()}} re-validates min-length after HTML stripping, so a payload like {{<script>}} (8 chars, passes min(1)) gets stripped to {{""""}} and correctly rejected
+
+h3. Files Changed
+
+* {{packages/utils/src/index.ts}} — new shared {{sanitizeTextInput}} export
+* {{packages/utils/src/restaurant-schemas.ts}} — sanitization on all text fields
+* {{packages/utils/src/customer-schemas.ts}} — sanitization on all text fields
+* {{apps/web/src/app/api/profile/route.ts}} — uses shared import instead of local copy",,Done,24/Feb/26 3:50 PM
+SECURITY BUG - Authentication Tokens Visible in document.cookie (Client-Side Exposure),KAN-8,10045,Bug,Done,KAN,Wegodelivery QA & Security Lab,software,Alexander Adrian,712020:7fd212e7-d79f-454c-a151-8ac1763987b1,Your first project,Highest,Done,claudiustefan,712020:ef548095-f904-4755-bca1-43853fca538f,Alexander Adrian,712020:7fd212e7-d79f-454c-a151-8ac1763987b1,Alexander Adrian,712020:7fd212e7-d79f-454c-a151-8ac1763987b1,20/Feb/26 3:11 PM,24/Feb/26 4:35 PM,08/Mar/26 12:00 PM,24/Feb/26 4:35 PM,,0,"h3. 🐞 Bug Summary
+
+When executing {{document.cookie}} in browser DevTools, authentication-related cookies and tokens are returned in plain text, including:
+
+* Stripe session identifiers
+* Locale settings
+* *Auth tokens (*{{sb-…-auth-token}}*) for the logged-in user*
+* Tokens containing:
+** Base64-encoded JWT
+** User personal information (name, email)
+** Refresh tokens
+** Expiration timestamps
+** Authentication provider details
+
+These values *should never be accessible in plaintext on the client side*, because they allow attackers to:
+
+* Hijack user sessions
+* Perform account takeover
+* Impersonate authenticated users
+* Bypass login mechanisms
+* Steal sensitive personal data
+
+This is a *major security vulnerability*.
+
+----
+
+h3. 🔁 Steps to Reproduce
+
+# Log in to the application normally.
+# Open browser *Developer Tools* → *Console*.
+# Type the following: document.cookie
+# Press Enter.
+# Observe the returned cookie string which includes *authentication tokens and user data*.
+
+----
+
+h3. ✅ Expected Result
+
+Authentication tokens *must NEVER be stored in accessible cookies*.
+
+Correct security behavior:
+
+* {{document.cookie}} should return *no auth-sensitive data*.
+* Tokens should be stored *securely*, for example:
+** HttpOnly cookies (not readable by JavaScript)
+** Secure cookies (HTTPS only)
+** SameSite=Lax or Strict
+** Or server-side sessions
+
+----
+
+h3. ❌ Actual Result
+
+{{document.cookie}} reveals multiple sensitive cookies, including:
+
+* {{__stripe_mid}}
+* {{NEXT_LOCALE}}
+* {{sb-xxx-auth-token.0}}
+* {{sb-xxx-auth-token.1}}
+
+Contents include:
+
+✔ Access token
+✔ Refresh token
+✔ JWT payload
+✔ User full name
+✔ Google auth provider details
+✔ User email
+✔ Token expiration
+✔ Provider metadata
+
+----
+
+h3. 🔥 Severity
+
+* Critical 
+
+----
+
+h3. 🌍 Environment
+
+* OS: Windows 11
+* Browser: Edge
+* Device: Pc
+
+----
+
+h3. 📌 Impact
+
+If an attacker can access the browser (even through XSS), they can:
+
+* Steal authentication tokens
+* Log in as the user
+* Access personal data
+* Perform privileged actions
+* Persist long-term sessions using refresh tokens
+
+This can lead to:
+
+🔥 *Full Account Takeover*
+🔥 *Data Exposure*
+🔥 *Compliance Violations (GDPR)*
+🔥 *Session Hijacking*
+
+----
+
+h3. 📎 Attachments
+
+!image-20260220-131053.png|width=671,alt=""image-20260220-131053.png""!",,Alexander Adrian,Claudiu Sfetan,712020:7fd212e7-d79f-454c-a151-8ac1763987b1,712020:b2a39849-1f84-43df-9964-f5586bb81e48,,,,,,,,,20/Feb/26 3:11 PM;21482f02-4770-419d-90c5-618b8a94b08e;image-20260220-131053.png;https://alexxanderadrian-1771585764130.atlassian.net/rest/api/3/attachment/content/10033,,,,,,,0|i0002j:,,,,,"24/Feb/26 11:54 AM;712020:b2a39849-1f84-43df-9964-f5586bb81e48;h2. Investigation Result: By Design (Supabase SSR Architecture)
+
+h3. Research Summary
+
+After researching Supabase's official documentation and community discussions, this is *expected behavior* for Supabase Auth with SSR — not a vulnerability in our implementation.
+
+*Supabase official docs (*[*How do I make the cookies HttpOnly?*|https://supabase.com/docs/guides/troubleshooting/how-do-i-make-the-cookies-httponly-vwweFx]*):*
+
+{quote}""This is not necessary. Both the access token and refresh token are designed to be passed around to different components in your application. The browser-based side of your application needs access to the refresh token to properly maintain a browser session anyway.""{quote}
+
+*Supabase maintainer @hf (*[*GitHub Discussion #12303*|https://github.com/orgs/supabase/discussions/12303]*):*
+
+{quote}""HTTP-Only cookies are not an option unless you're making a very traditional web app.""{quote}
+
+h3. Why HttpOnly cookies would break our app
+
+Setting cookies to {{httpOnly}} would disable:
+
+* {{onAuthStateChange()}} — client can't detect login/logout
+* Client-side {{getUser()}} — all React Query hooks break
+* Supabase Realtime subscriptions (order tracking, driver location)
+* All Zustand store auth flows
+
+h3. Mitigations already in place
+
+Our {{cookie-options.ts}} follows Supabase's recommended best practices:
+
+||Defense||Status||
+|{{secure: true}} (HTTPS-only in production)|Implemented|
+|{{sameSite: 'lax'}} (CSRF protection)|Implemented|
+|{{maxAge: 7 days}} (reduced from Supabase's 400-day default)|Implemented|
+|Content Security Policy (CSP) with strict allowlists|Implemented|
+|CSP violation reporting endpoint|Implemented|
+|{{Strict-Transport-Security}} (HSTS with preload)|Implemented|
+|{{X-Frame-Options: DENY}} (clickjacking prevention)|Implemented|
+|{{X-Content-Type-Options: nosniff}}|Implemented|
+
+h3. Conclusion
+
+The attack scenario described (""if an attacker can access the browser through XSS"") is mitigated by *preventing XSS in the first place*, which is handled by our CSP headers and addressed further in KAN-9 (Stored XSS fix). Making cookies HttpOnly is not feasible with Supabase's architecture and is explicitly not recommended by Supabase.",,Done,24/Feb/26 4:35 PM
+Sort Drop down menu,KAN-7,10012,Bug,Done,KAN,Wegodelivery QA & Security Lab,software,Alexander Adrian,712020:7fd212e7-d79f-454c-a151-8ac1763987b1,Your first project,Medium,Done,claudiustefan,712020:ef548095-f904-4755-bca1-43853fca538f,Alexander Adrian,712020:7fd212e7-d79f-454c-a151-8ac1763987b1,Alexander Adrian,712020:7fd212e7-d79f-454c-a151-8ac1763987b1,20/Feb/26 2:14 PM,24/Feb/26 12:46 PM,27/Feb/26 4:06 PM,24/Feb/26 12:46 PM,,0,"h3. 🐞 Bug Summary
+
+Sort drop down menu is hidden
+
+----
+
+h3. 🔁 Steps to Reproduce
+
+# Go to [https://wegodelivery.app/en|https://wegodelivery.app/en|smart-link] 
+# Log in and try to search to restaurants
+# On the right side, under restaurants, click on Sort drop down menu
+
+----
+
+h3. ✅ Expected Result
+
+When Sort is clicked, the menu should be visible and functional
+
+----
+
+h3. ❌ Actual Result
+
+When Sort is clicked the menu is clearly dropping down but is hidden under no restaurants found section.
+
+----
+
+h3. 🔥 Severity
+
+*  Medium 
+
+----
+
+h3. 🌍 Environment
+
+* OS: Windows 11
+* Browser: Edge, Chrome
+* Device: Pc
+
+----
+
+h3. 📌 Impact
+
+Can affect the user experience
+
+----
+
+h3. 📎 Attachments
+
+!image-20260220-121216.png|width=671,alt=""image-20260220-121216.png""!",,Alexander Adrian,Claudiu Sfetan,712020:7fd212e7-d79f-454c-a151-8ac1763987b1,712020:b2a39849-1f84-43df-9964-f5586bb81e48,,,,,,,,,20/Feb/26 2:14 PM;21482f02-4770-419d-90c5-618b8a94b08e;image-20260220-121216.png;https://alexxanderadrian-1771585764130.atlassian.net/rest/api/3/attachment/content/10000,,,,,,,0|i0002z:,,,,,"24/Feb/26 11:45 AM;712020:b2a39849-1f84-43df-9964-f5586bb81e48;*Fix committed* — {{4a32bcc}} on {{main}}
+
+*Root cause:* The filter container wrapping the sort dropdown had {{overflow-hidden}} CSS class. This creates a clipping boundary that hides absolutely-positioned children (the dropdown menu) regardless of their z-index value.
+
+*Fix:* Removed {{overflow-hidden}} from the filter container in {{search-content.tsx:530}}. The sort dropdown (with {{z-[100]}}) now renders above the container as intended.
+
+*File changed:* {{apps/web/src/app/[locale]/(customer)/search/_components/search-content.tsx}}
+
+Ready for retest — deploy needed to verify on production.",,Done,24/Feb/26 12:46 PM
